@@ -309,6 +309,11 @@ temp/
 
 # Vercel
 .vercel
+.vercel/**
+
+# Deployment
+.env.production
+.env.production.local
 
 # Turborepo
 .turbo

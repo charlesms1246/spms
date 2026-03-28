@@ -1,0 +1,37 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "version": 2,
+  "name": "spms-frontend",
+  "framework": "nextjs",
+  "buildCommand": "cd web && npm ci && npm run build",
+  "devCommand": "cd web && npm run dev",
+  "installCommand": "cd web && npm ci",
+  "outputDirectory": "web/.next",
+  "public": false,
+  "regions": ["iad1"],
+  "functions": {
+    "web/app/**": {
+      "maxDuration": 30
+    }
+  },
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "X-Frame-Options",
+          "value": "DENY"
+        },
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "strict-origin-when-cross-origin"
+        }
+      ]
+    }
+  ],
+  "ignoreCommand": "git diff --quiet HEAD^ HEAD ./web"
+}
