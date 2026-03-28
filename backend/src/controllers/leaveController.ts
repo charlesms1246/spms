@@ -100,7 +100,7 @@ export const getAllLeaves = async (req: AuthRequest, res: Response): Promise<voi
   }
 };
 
-// Get pending leave requests (for manager)
+// Get pending leave requests (for manager/admin approval)
 export const getPendingLeaves = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     if (!req.user) {
@@ -108,16 +108,35 @@ export const getPendingLeaves = async (req: AuthRequest, res: Response): Promise
       return;
     }
 
-    // Get team members
-    const teamMembers = await User.find({ manager: req.user.id }).select('_id');
-    const teamIds = teamMembers.map((m) => m._id);
+    let leaves;
 
-    const leaves = await LeaveRequest.find({
-      userId: { $in: teamIds },
-      status: 'Pending',
-    })
-      .populate('userId', 'firstName lastName email department')
-      .sort({ createdAt: -1 });
+    if (req.user.role === 'Admin') {
+      // Admin sees pending leaves from Managers only
+      const managers = await User.find({ role: 'Manager' }).select('_id');
+      const managerIds = managers.map((m) => m._id);
+
+      leaves = await LeaveRequest.find({
+        userId: { $in: managerIds },
+        status: 'Pending',
+      })
+        .populate('userId', 'firstName lastName email department role')
+        .sort({ createdAt: -1 });
+    } else if (req.user.role === 'Manager') {
+      // Manager sees pending leaves from Admins only
+      const admins = await User.find({ role: 'Admin' }).select('_id');
+      const adminIds = admins.map((a) => a._id);
+
+      leaves = await LeaveRequest.find({
+        userId: { $in: adminIds },
+        status: 'Pending',
+      })
+        .populate('userId', 'firstName lastName email department role')
+        .sort({ createdAt: -1 });
+    } else {
+      // Employees cannot approve leaves
+      res.status(403).json({ message: 'Insufficient permissions' });
+      return;
+    }
 
     res.json({ leaves, total: leaves.length });
   } catch (error: any) {
@@ -133,6 +152,29 @@ export const approveLeave = async (req: AuthRequest, res: Response): Promise<voi
       return;
     }
 
+    // Get the leave request
+    const leaveRequest = await LeaveRequest.findById(req.params.id).populate('userId', 'role');
+
+    if (!leaveRequest) {
+      res.status(404).json({ message: 'Leave request not found' });
+      return;
+    }
+
+    // Admin can approve Manager's leaves
+    // Manager can approve Admin's leaves
+    const userRole = req.user.role;
+    const requesterRole = (leaveRequest.userId as any).role;
+
+    if (userRole === 'Admin' && requesterRole !== 'Manager') {
+      res.status(403).json({ message: 'Admins can only approve Manager leaves' });
+      return;
+    }
+
+    if (userRole === 'Manager' && requesterRole !== 'Admin') {
+      res.status(403).json({ message: 'Managers can only approve Admin leaves' });
+      return;
+    }
+
     const leave = await LeaveRequest.findByIdAndUpdate(
       req.params.id,
       {
@@ -142,11 +184,6 @@ export const approveLeave = async (req: AuthRequest, res: Response): Promise<voi
       },
       { new: true }
     );
-
-    if (!leave) {
-      res.status(404).json({ message: 'Leave request not found' });
-      return;
-    }
 
     res.json({ message: 'Leave approved successfully', leave });
   } catch (error: any) {
@@ -162,6 +199,29 @@ export const rejectLeave = async (req: AuthRequest, res: Response): Promise<void
       return;
     }
 
+    // Get the leave request
+    const leaveRequest = await LeaveRequest.findById(req.params.id).populate('userId', 'role');
+
+    if (!leaveRequest) {
+      res.status(404).json({ message: 'Leave request not found' });
+      return;
+    }
+
+    // Admin can reject Manager's leaves
+    // Manager can reject Admin's leaves
+    const userRole = req.user.role;
+    const requesterRole = (leaveRequest.userId as any).role;
+
+    if (userRole === 'Admin' && requesterRole !== 'Manager') {
+      res.status(403).json({ message: 'Admins can only reject Manager leaves' });
+      return;
+    }
+
+    if (userRole === 'Manager' && requesterRole !== 'Admin') {
+      res.status(403).json({ message: 'Managers can only reject Admin leaves' });
+      return;
+    }
+
     const { rejectionReason } = req.body;
 
     const leave = await LeaveRequest.findByIdAndUpdate(
@@ -174,11 +234,6 @@ export const rejectLeave = async (req: AuthRequest, res: Response): Promise<void
       },
       { new: true }
     );
-
-    if (!leave) {
-      res.status(404).json({ message: 'Leave request not found' });
-      return;
-    }
 
     res.json({ message: 'Leave rejected successfully', leave });
   } catch (error: any) {

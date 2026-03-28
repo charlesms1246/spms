@@ -139,7 +139,8 @@ export default function LeavePage() {
               <table className="w-full">
                 <thead className="bg-gray-200">
                   <tr>
-                    <th className="px-6 py-3 text-left text-sm font-medium text-black">Employee</th>
+                    <th className="px-6 py-3 text-left text-sm font-medium text-black">Name</th>
+                    <th className="px-6 py-3 text-left text-sm font-medium text-black">Role</th>
                     <th className="px-6 py-3 text-left text-sm font-medium text-black">Type</th>
                     <th className="px-6 py-3 text-left text-sm font-medium text-black">From</th>
                     <th className="px-6 py-3 text-left text-sm font-medium text-black">To</th>
@@ -150,7 +151,7 @@ export default function LeavePage() {
                 <tbody className="divide-y divide-gray-200">
                   {pendingLeaves.length === 0 ? (
                     <tr>
-                      <td colSpan={6} className="px-6 py-3 text-center text-black">
+                      <td colSpan={7} className="px-6 py-3 text-center text-black">
                         No pending requests
                       </td>
                     </tr>
@@ -158,6 +159,11 @@ export default function LeavePage() {
                     pendingLeaves.map((leave: any) => (
                       <tr key={leave._id} className="hover:bg-gray-200">
                         <td className="px-6 py-3 text-black">{leave.userId?.firstName} {leave.userId?.lastName}</td>
+                        <td className="px-6 py-3">
+                          <span className="inline-block px-3 py-1 rounded-full text-sm font-medium bg-purple-100 text-purple-800">
+                            {leave.userId?.role}
+                          </span>
+                        </td>
                         <td className="px-6 py-3">
                           <span className="inline-block px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
                             {leave.leaveType}
