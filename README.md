@@ -573,12 +573,6 @@ NEXT_PUBLIC_ENV=development
 
 ---
 
-## 📄 License
-
-This project is provided as-is for educational and commercial use.
-
----
-
 ## 👥 Support
 
 For issues or questions, refer to:
