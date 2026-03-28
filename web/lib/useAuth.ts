@@ -45,7 +45,7 @@ export const useRequireAuth = () => {
 };
 
 export const useRequireRole = (roles: string[]) => {
-  const { user, isAuthenticated } = useAuth();
+  const { user, isAuthenticated, loading } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
@@ -55,5 +55,5 @@ export const useRequireRole = (roles: string[]) => {
     }
   }, [user, isAuthenticated, roles, router]);
 
-  return { user, isAuthenticated };
+  return { user, isAuthenticated, loading };
 };
