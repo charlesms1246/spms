@@ -132,12 +132,12 @@ export default function EmployeesPage() {
                 ) : (
                   employees.map((emp: any) => (
                     <tr key={emp._id} className="hover:bg-gray-200">
-                      <td className="px-6 py-3 font-medium">
+                      <td className="px-6 py-3 font-medium text-black">
                         {emp.firstName} {emp.lastName}
                       </td>
-                      <td className="px-6 py-3 text-sm">{emp.email}</td>
-                      <td className="px-6 py-3 text-sm">{emp.department}</td>
-                      <td className="px-6 py-3 text-sm">{emp.designation}</td>
+                      <td className="px-6 py-3 text-sm text-black">{emp.email}</td>
+                      <td className="px-6 py-3 text-sm text-black">{emp.department}</td>
+                      <td className="px-6 py-3 text-sm text-black">{emp.designation}</td>
                       <td className="px-6 py-3">
                         <StatusBadge status={emp.status} />
                       </td>
